@@ -50,6 +50,7 @@ export enum Path {
   SdNew = "/sd-new",
   Artifacts = "/artifacts",
   SearchChat = "/search-chat",
+  Dashboard = "/dashboard",
 }
 
 export enum ApiPath {
@@ -590,3 +591,10 @@ export const PLUGINS = [
 
 export const SAAS_CHAT_URL = "https://nextchat.dev/chat";
 export const SAAS_CHAT_UTM_URL = "https://nextchat.dev/chat?utm=github";
+
+export const LyyApi = {
+  // 使用记录
+  usageRecords: "/v1/call-record/pageList",
+  // 充值记录
+  payRecords: "/v1/recharge-record/pageList",
+};
