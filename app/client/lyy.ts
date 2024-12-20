@@ -1,10 +1,10 @@
-import { LYY_BASE_URL, LyyApi } from "../constant";
+import { ApiPath, LyyApi } from "../constant";
 import { fetch } from "../utils";
 import { getHeaders } from "./api";
 
 export const fetchLyyBackend = async (
   url: string,
-  data: any,
+  data: any = {},
   options?: Record<string, unknown>,
 ) => {
   try {
@@ -28,7 +28,7 @@ export const fetchLyyBackend = async (
 };
 
 const createFetchPath = (apiPath: string) => {
-  let baseURL = LYY_BASE_URL;
+  let baseURL = ApiPath.Lyy as string;
   if (baseURL.endsWith("/")) {
     baseURL = baseURL.slice(0, -1);
   }
@@ -39,6 +39,10 @@ const createFetchPath = (apiPath: string) => {
   return [baseURL, api].join("/");
 };
 
-export const fetchUsageRecords = async (data: any) => {
+export const fetchUsageRecords = async (data: any = {}) => {
   return fetchLyyBackend(createFetchPath(LyyApi.usageRecords), data);
+};
+
+export const fetchRechargeRecords = async (data: any = {}) => {
+  return fetchLyyBackend(createFetchPath(LyyApi.payRecords), data);
 };

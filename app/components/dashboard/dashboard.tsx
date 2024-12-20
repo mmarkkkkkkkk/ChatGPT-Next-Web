@@ -1,98 +1,155 @@
-import { FC } from "react";
+import { FC, useMemo, useState } from "react";
 import {
+  Breadcrumb,
+  Button,
   ConfigProvider,
-  Space,
+  DatePicker,
   Table,
   TableProps,
   Tabs,
-  Tag,
+  TabsProps,
   theme,
 } from "antd";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import useSWR from "swr";
+import zhCN from "antd/locale/zh_CN";
+import dayjs from "dayjs";
+
+import "dayjs/locale/zh-cn";
 
 import { useAccessStore } from "@/app/store";
 import { Path } from "@/app/constant";
 import styles from "./dashboard.module.scss";
 import { useDarkMode } from "@/app/utils/hooks";
+import { fetchRechargeRecords, fetchUsageRecords } from "@/app/client/lyy";
+import { getLang } from "@/app/locales";
+import { RangePickerProps } from "antd/es/date-picker";
 
-const { TabPane } = Tabs;
+const { RangePicker } = DatePicker;
 
-interface DashboardProps {}
+const TIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
+const lang = getLang();
+if (lang === "cn") {
+  dayjs.locale("zh-cn");
+}
+const locale = lang === "cn" ? zhCN : undefined;
 
-const columns: TableProps<any>["columns"] = [
-  {
-    title: "Name",
-    dataIndex: "name",
-    key: "name",
-    render: (text) => <a>{text}</a>,
-  },
-  {
-    title: "Age",
-    dataIndex: "age",
-    key: "age",
-  },
-  {
-    title: "Address",
-    dataIndex: "address",
-    key: "address",
-  },
-  {
-    title: "Tags",
-    key: "tags",
-    dataIndex: "tags",
-    render: (_, { tags }) => (
-      <>
-        {tags.map((tag: any) => {
-          let color = tag.length > 5 ? "geekblue" : "green";
-          if (tag === "loser") {
-            color = "volcano";
-          }
-          return (
-            <Tag color={color} key={tag}>
-              {tag.toUpperCase()}
-            </Tag>
-          );
-        })}
-      </>
-    ),
-  },
-  {
-    title: "Action",
-    key: "action",
-    render: (_, record) => (
-      <Space size="middle">
-        <a>Invite {record.name}</a>
-        <a>Delete</a>
-      </Space>
-    ),
-  },
-];
+interface RequestParams {
+  pageNum: number;
+  pageSize: number;
+  startTime?: string;
+  endTime?: string;
+}
 
-const data: any[] = [
-  {
-    key: "1",
-    name: "John Brown",
-    age: 32,
-    address: "New York No. 1 Lake Park",
-    tags: ["nice", "developer"],
-  },
-  {
-    key: "2",
-    name: "Jim Green",
-    age: 42,
-    address: "London No. 1 Lake Park",
-    tags: ["loser"],
-  },
-  {
-    key: "3",
-    name: "Joe Black",
-    age: 32,
-    address: "Sydney No. 1 Lake Park",
-    tags: ["cool", "teacher"],
-  },
-];
+type TableType = "pay" | "usage";
+const fetchDashboardData = (params: any, type: TableType) => {
+  console.log(params);
+  if (type === "pay") {
+    return fetchRechargeRecords(params);
+  }
+  return fetchUsageRecords(params);
+};
 
-const Dashboard: FC<DashboardProps> = (props) => {
+const DashboardTable: FC<{ type: TableType }> = (props) => {
+  const [params, setParams] = useState<RequestParams>({
+    pageNum: 1,
+    pageSize: 10,
+    startTime: dayjs().startOf("day").format(TIME_FORMAT),
+    endTime: dayjs().endOf("day").format(TIME_FORMAT),
+  });
+  const { data: dataResp, isValidating } = useSWR([props.type, params], () =>
+    fetchDashboardData(params, props.type),
+  );
+  const [dateFilterVal, setDateFilterVal] = useState<RangePickerProps["value"]>(
+    [dayjs(), dayjs()],
+  );
+
+  const handleSearch = () => {
+    setParams((params) => ({
+      ...params,
+      startTime: dateFilterVal?.[0]?.startOf("day").format(TIME_FORMAT),
+      endTime: dateFilterVal?.[1]?.endOf("day").format(TIME_FORMAT),
+      pageNum: 1,
+    }));
+  };
+
+  const columns = useMemo<TableProps["columns"]>(() => {
+    if (props.type === "pay") {
+      return [
+        {
+          title: "日期",
+          dataIndex: "rechargeTime",
+        },
+        {
+          title: "金额",
+          dataIndex: "rechargeAmount",
+        },
+      ];
+    }
+    return [
+      {
+        title: "日期",
+        dataIndex: "callTime",
+      },
+      {
+        title: "问题token数",
+        dataIndex: "promptTokens",
+      },
+      {
+        title: "响应token数",
+        dataIndex: "completionTokens",
+      },
+      {
+        title: "总tokens数",
+        dataIndex: "totalTokens",
+      },
+      {
+        title: "消耗金额",
+        dataIndex: "moneyCost",
+      },
+    ];
+  }, [props.type]);
+
+  const dataSource = useMemo(() => dataResp?.data ?? [], [dataResp]);
+
+  const pagination: TableProps["pagination"] = useMemo(
+    () => ({
+      showQuickJumper: true,
+      hideOnSinglePage: true,
+      current: params.pageNum,
+      pageSize: params.pageSize,
+      total: dataResp?.totalNum ?? 0,
+      onChange: (pageNum) => {
+        setParams((params) => ({ ...params, pageNum }));
+      },
+    }),
+    [params, dataResp],
+  );
+
+  return (
+    <div>
+      <div className={styles.filter}>
+        <div className={styles.filterMain}>
+          <RangePicker value={dateFilterVal} onChange={setDateFilterVal} />
+        </div>
+        <Button type="primary" onClick={handleSearch}>
+          查询
+        </Button>
+      </div>
+      <Table
+        bordered
+        rowKey="rechargeTime"
+        size="small"
+        loading={isValidating}
+        columns={columns}
+        dataSource={dataSource}
+        pagination={pagination}
+      />
+    </div>
+  );
+};
+
+const Dashboard: FC = (props) => {
   const { accessCode } = useAccessStore();
   const navigate = useNavigate();
   const isDark = useDarkMode();
@@ -102,19 +159,38 @@ const Dashboard: FC<DashboardProps> = (props) => {
     return null;
   }
 
-  // const usageRecordsResp = await fetchLyyBackend(LyyApi.usageRecords, {})
+  const tabItems: TabsProps["items"] = [
+    {
+      label: "使用记录",
+      key: "usage",
+      children: <DashboardTable type="usage" />,
+    },
+    {
+      label: "充值记录",
+      key: "pay",
+      children: <DashboardTable type="pay" />,
+    },
+  ];
 
   return (
     <div className={styles["dashboard"]}>
-      <ConfigProvider theme={isDark ? { algorithm: theme.darkAlgorithm } : {}}>
-        <Tabs>
-          <TabPane tab="使用记录" key="usage">
-            <Table columns={columns} dataSource={data} />
-          </TabPane>
-          <TabPane tab="充值记录" key="pay">
-            charge
-          </TabPane>
-        </Tabs>
+      <ConfigProvider
+        theme={isDark ? { algorithm: theme.darkAlgorithm } : {}}
+        locale={locale}
+      >
+        <div className={styles.nav}>
+          <Breadcrumb
+            items={[
+              {
+                title: <Link to={Path.Home}>Home</Link>,
+              },
+              {
+                title: "Dashboard",
+              },
+            ]}
+          />
+        </div>
+        <Tabs items={tabItems}></Tabs>
       </ConfigProvider>
     </div>
   );

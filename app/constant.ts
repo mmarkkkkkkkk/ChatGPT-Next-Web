@@ -36,7 +36,8 @@ export const CACHE_URL_PREFIX = "/api/cache";
 export const UPLOAD_URL = `${CACHE_URL_PREFIX}/upload`;
 
 /** lyy */
-export const LYY_BASE_URL = "http://127.0.0.1:4523/m1/5579269-5257196-default";
+export const LYY_BASE_URL =
+  process.env.BASE_URL ?? "http://127.0.0.1:4523/m1/5579269-5257196-default";
 
 export enum Path {
   Home = "/",
