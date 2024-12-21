@@ -4,13 +4,11 @@ import styles from "./home.module.scss";
 
 import { IconButton } from "./button";
 import SettingsIcon from "../icons/settings.svg";
-import GithubIcon from "../icons/github.svg";
 import ChatGptIcon from "../icons/chatgpt.svg";
 import AddIcon from "../icons/add.svg";
 import DeleteIcon from "../icons/delete.svg";
-import MaskIcon from "../icons/mask.svg";
 import DragIcon from "../icons/drag.svg";
-import DiscoveryIcon from "../icons/discovery.svg";
+import WalletIcon from "../icons/wallet.svg";
 
 import Locale from "../locales";
 
@@ -23,7 +21,6 @@ import {
   NARROW_SIDEBAR_WIDTH,
   Path,
   PLUGINS,
-  REPO_URL,
 } from "../constant";
 
 import { Link, useNavigate } from "react-router-dom";
@@ -231,12 +228,12 @@ export function SideBar(props: { className?: string }) {
       {...props}
     >
       <SideBarHeader
-        title="NextChat"
-        subTitle="Build your own AI assistant."
+        title="ai 对话"
+        subTitle="ai 个人助手"
         logo={<ChatGptIcon />}
         shouldNarrow={shouldNarrow}
       >
-        <div className={styles["sidebar-header-bar"]}>
+        {/* <div className={styles["sidebar-header-bar"]}>
           <IconButton
             icon={<MaskIcon />}
             text={shouldNarrow ? undefined : Locale.Mask.Name}
@@ -257,7 +254,7 @@ export function SideBar(props: { className?: string }) {
             onClick={() => setShowPluginSelector(true)}
             shadow
           />
-        </div>
+        </div> */}
         {showPluginSelector && (
           <Selector
             items={[
@@ -307,6 +304,20 @@ export function SideBar(props: { className?: string }) {
               </Link>
             </div>
             <div className={styles["sidebar-action"]}>
+              <Link to={Path.CRecharge}>
+                <IconButton
+                  aria={Locale.Settings.Title}
+                  icon={<SettingsIcon />}
+                  shadow
+                />
+              </Link>
+            </div>
+            <div className={styles["sidebar-action"]}>
+              <Link to={Path.Dashboard}>
+                <IconButton icon={<WalletIcon />} shadow />
+              </Link>
+            </div>
+            {/* <div className={styles["sidebar-action"]}>
               <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
                 <IconButton
                   aria={Locale.Export.MessageFromChatGPT}
@@ -314,7 +325,7 @@ export function SideBar(props: { className?: string }) {
                   shadow
                 />
               </a>
-            </div>
+            </div> */}
           </>
         }
         secondaryAction={
