@@ -64,6 +64,10 @@ const PluginPage = dynamic(async () => (await import("./plugin")).PluginPage, {
   loading: () => <Loading noLogo />,
 });
 
+const Cuser = dynamic(async () => (await import("./cUser")).CUser, {
+  loading: () => <Loading noLogo />,
+});
+
 const SearchChat = dynamic(
   async () => (await import("./search-chat")).SearchChatPage,
   {
@@ -72,6 +76,14 @@ const SearchChat = dynamic(
 );
 
 const Sd = dynamic(async () => (await import("./sd")).Sd, {
+  loading: () => <Loading noLogo />,
+});
+
+const Code = dynamic(async () => (await import("./code")).Code, {
+  loading: () => <Loading noLogo />,
+});
+
+const CRecharge = dynamic(async () => (await import("./cRecharge")).CRecharge, {
   loading: () => <Loading noLogo />,
 });
 
@@ -207,6 +219,9 @@ function Screen() {
             <Route path={Path.Chat} element={<Chat />} />
             <Route path={Path.Settings} element={<Settings />} />
             <Route path={Path.Dashboard} element={<Dashboard />} />
+            <Route path={Path.Cuser} element={<Cuser />} />
+            <Route path={Path.Ccode} element={<Code />} />
+            <Route path={Path.CRecharge} element={<CRecharge />} />
           </Routes>
         </WindowContent>
       </>

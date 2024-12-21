@@ -52,6 +52,9 @@ export enum Path {
   Artifacts = "/artifacts",
   SearchChat = "/search-chat",
   Dashboard = "/dashboard",
+  Cuser = "/c-user",
+  Ccode = "/c-code",
+  CRecharge = "/recharge",
 }
 
 export enum ApiPath {
