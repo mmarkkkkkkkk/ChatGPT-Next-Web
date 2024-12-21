@@ -17,7 +17,8 @@ interface RechargeResponse {
 export const CRecharge: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const mock = "https://apifoxmock.com/m1/5579269-5257196-default";
+  //   const mock = "https://apifoxmock.com/m1/5579269-5257196-default";
+  const mock = "";
 
   const onFinish = async (values: { code: string }) => {
     setLoading(true);
